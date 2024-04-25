@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
@@ -34,13 +35,10 @@ public class UserController {
 //    }
 
     @PostMapping("/")
-    public ResponseEntity<String> createUser(@RequestBody @Valid User user, BindingResult bindingResult) {
+    public ResponseEntity<String> createUser(@RequestBody @Valid User user, BindingResult bindingResult) throws BindException {
         log.info("CONTROLLER POST /USERS/");
         if (bindingResult.hasErrors()) {
-            for (ObjectError error : bindingResult.getAllErrors()) {
-                String errorMessage = error.getDefaultMessage();
-            }
-            return ResponseEntity.badRequest().body("Validation failed");
+            throw new BindException(bindingResult);
         }
         User newUser = userService.save(user);
         return  ResponseEntity.status(HttpStatus.CREATED)

@@ -7,6 +7,7 @@ import com.clearsolution.testAssignment.exception.NullEntityReferenceException;
 import com.clearsolution.testAssignment.model.User;
 import com.clearsolution.testAssignment.service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +20,7 @@ import java.util.Random;
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
-
     private final Environment environment;
-
     @Override
     public User save(User user) {
         if (user == null) {
@@ -29,10 +28,10 @@ public class UserServiceImpl implements UserService {
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate parsedDate = LocalDate.parse(user.getBirthDate(), formatter);
-        int minAge = Integer.getInteger(environment.getProperty("minAge"));
+        int minAge = Integer.parseInt(environment.getProperty("minAge"));
         if (parsedDate.isBefore(LocalDate.now())) {
             if (parsedDate.isAfter(LocalDate.now().minusYears(minAge))) {
-                throw new AgeRestrictionException("User age must be more than " + minAge + "years old.");
+                throw new AgeRestrictionException("User age must be more than " + minAge + " years.");
             } else {
                 Random random = new Random();
                 user.setId(Math.abs(random.nextLong()));

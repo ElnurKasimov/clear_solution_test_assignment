@@ -15,7 +15,7 @@ public class User {
 
     private long id;
 
-    @Email
+    @Email(message = "must be in the format of an e-mail address")
     private String email;
 
     @NotEmpty(message = "First name shouldn't be null or empty")
