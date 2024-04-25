@@ -22,45 +22,31 @@ import java.util.stream.Collectors;
 public class UserController {
     private final UserService userService;
 
-//    @GetMapping
-//    List<UserResponse> getAllUsers() {
-//        return userService.getAll().stream()
-//                .map(UserResponse::new)
-//                .collect(Collectors.toList());
-//    }
-//    @GetMapping("/{id}")
-//    UserResponse getUser(@PathVariable long id) {
-//        log.info("CONTROLLER GET /API/USERS/" + id);
-//        return new UserResponse(userService.readById(id));
-//    }
-
     @PostMapping("/")
-    public ResponseEntity<String> createUser(@RequestBody @Valid User user, BindingResult bindingResult) throws BindException {
+    public ResponseEntity<User> createUser(@RequestBody @Valid User user, BindingResult bindingResult) throws BindException {
         log.info("CONTROLLER POST /USERS/");
         if (bindingResult.hasErrors()) {
             throw new BindException(bindingResult);
         }
         User newUser = userService.save(user);
         return  ResponseEntity.status(HttpStatus.CREATED)
-            .header("Location", "/" +
-                    "users/" + newUser.getId())
-            .build();
+            .header("Location", "/" + "users/" + newUser.getId())
+            .body(newUser);
     }
 
-//    @PutMapping("/{id}")
-//    ResponseEntity<Void>  updateUser(@PathVariable long id, @RequestBody UserRequest userRequest) {
-//        log.info("CONTROLLER PUT /API/USERS/" + id);
-//        User fromDb = userService.readById(id);
-//        fromDb.setFirstName(userRequest.getFirstName());
-//        fromDb.setLastName(userRequest.getLastName());
-//        fromDb.setPassword(passwordEncoder.encode(userRequest.getPassword()));
-//        fromDb.setRole(roleService.findByName(userRequest.getRole().toUpperCase()));
-//        userService.create(fromDb);
-//        return ResponseEntity.status(HttpStatus.CREATED)
-//                .header("Location", "/api/users/" + fromDb.getId())
-//                .build();
-//    }
-//
+    @PutMapping("/{id}")
+    ResponseEntity<User>  updateUser(@PathVariable long id, @RequestBody @Valid User user, BindingResult bindingResult) throws BindException {
+        log.info("CONTROLLER PUT /API/USERS/" + id);
+        if (bindingResult.hasErrors()) {
+            throw new BindException(bindingResult);
+        }
+        user.setId(id);
+        userService.save(user);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/users/" + user.getId())
+                .body(user);
+    }
+
 //    @DeleteMapping("/{id}")
 //    @ResponseStatus(HttpStatus.NO_CONTENT)
 //    void deleteUser(@PathVariable long id) {

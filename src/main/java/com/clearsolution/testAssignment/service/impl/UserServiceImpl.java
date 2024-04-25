@@ -1,16 +1,13 @@
 package com.clearsolution.testAssignment.service.impl;
 
-
 import com.clearsolution.testAssignment.exception.AgeRestrictionException;
 import com.clearsolution.testAssignment.exception.BirthDateValidationException;
 import com.clearsolution.testAssignment.exception.NullEntityReferenceException;
 import com.clearsolution.testAssignment.model.User;
 import com.clearsolution.testAssignment.service.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -29,27 +26,34 @@ public class UserServiceImpl implements UserService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate parsedDate = LocalDate.parse(user.getBirthDate(), formatter);
         int minAge = Integer.parseInt(environment.getProperty("minAge"));
-        if (parsedDate.isBefore(LocalDate.now())) {
-            if (parsedDate.isAfter(LocalDate.now().minusYears(minAge))) {
-                throw new AgeRestrictionException("User age must be more than " + minAge + " years.");
-            } else {
-                Random random = new Random();
-                user.setId(Math.abs(random.nextLong()));
-                return user;
-            }
-        } else {
+        if (!parsedDate.isBefore(LocalDate.now())) {
             throw new BirthDateValidationException("Birth date must be before current date.");
         }
-
+        if (parsedDate.isAfter(LocalDate.now().minusYears(minAge).minusDays(1))) {
+            throw new AgeRestrictionException("User age must be more than " + minAge + " years.");
+        }
+        if (user.getId() == 0) {
+            Random random = new Random();
+            //taking into account that persistent layer is not required this generation id method is only a stub
+            user.setId(Math.abs(random.nextLong()));
+        }
+        return user;
     }
 
     @Override
     public User updateSomeFields(User user) {
-        return null;
-    }
+        if (user == null) {
+            throw new NullEntityReferenceException("User cannot be 'null'");
+        }
 
-    @Override
-    public User update(User user) {
+        User updatedUser = findByIdStub(user.getId());
+
+        updatedUser.setEmail(user.getEmail());
+        updatedUser.setFirstName(user.getFirstName());
+        updatedUser.setLastName(user.getLastName());
+        updatedUser.setBirthDate(user.getBirthDate());
+        updatedUser.setAddress(user.getAddress());
+        updatedUser.setPhoneNumber(user.getPhoneNumber());
         return null;
     }
 
@@ -64,13 +68,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAll() {
-        return null;
-    }
+    public User findByIdStub(long id) {
+        return new User(id, "dou@test.com","John", "Dou",
+                "1970-01-01", "Rock County", "(111) 111-1234");
 
-    @Override
-    public User findById(long id) {
-        return null;
     }
 
 
