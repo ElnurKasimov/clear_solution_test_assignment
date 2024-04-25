@@ -21,11 +21,11 @@ public class ApplicationExceptionHandler {
         return getModelAndView(request, HttpStatus.NOT_FOUND, e);
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ModelAndView handleNotFoundException(HttpServletRequest request, EntityNotFoundException e) {
-        return getModelAndView(request, HttpStatus.BAD_REQUEST, e);
-    }
+//    @ExceptionHandler(EntityNotFoundException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    public ModelAndView handleNotFoundException(HttpServletRequest request, EntityNotFoundException e) {
+//        return getModelAndView(request, HttpStatus.BAD_REQUEST, e);
+//    }
 
     @ExceptionHandler(NullEntityReferenceException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

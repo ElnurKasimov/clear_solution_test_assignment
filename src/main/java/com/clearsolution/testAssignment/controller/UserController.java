@@ -49,26 +49,26 @@ public class UserController {
             .build();
     }
 
-    @PutMapping("/{id}")
-    ResponseEntity<Void>  updateUser(@PathVariable long id, @RequestBody UserRequest userRequest) {
-        log.info("CONTROLLER PUT /API/USERS/" + id);
-        User fromDb = userService.readById(id);
-        fromDb.setFirstName(userRequest.getFirstName());
-        fromDb.setLastName(userRequest.getLastName());
-        fromDb.setPassword(passwordEncoder.encode(userRequest.getPassword()));
-        fromDb.setRole(roleService.findByName(userRequest.getRole().toUpperCase()));
-        userService.create(fromDb);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .header("Location", "/api/users/" + fromDb.getId())
-                .build();
-    }
-
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    void deleteUser(@PathVariable long id) {
-        log.info("CONTROLLER DELETE /API/USERS/" + id);
-        userService.delete(id);
-    }
+//    @PutMapping("/{id}")
+//    ResponseEntity<Void>  updateUser(@PathVariable long id, @RequestBody UserRequest userRequest) {
+//        log.info("CONTROLLER PUT /API/USERS/" + id);
+//        User fromDb = userService.readById(id);
+//        fromDb.setFirstName(userRequest.getFirstName());
+//        fromDb.setLastName(userRequest.getLastName());
+//        fromDb.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+//        fromDb.setRole(roleService.findByName(userRequest.getRole().toUpperCase()));
+//        userService.create(fromDb);
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//                .header("Location", "/api/users/" + fromDb.getId())
+//                .build();
+//    }
+//
+//    @DeleteMapping("/{id}")
+//    @ResponseStatus(HttpStatus.NO_CONTENT)
+//    void deleteUser(@PathVariable long id) {
+//        log.info("CONTROLLER DELETE /API/USERS/" + id);
+//        userService.delete(id);
+//    }
 
 
 }
