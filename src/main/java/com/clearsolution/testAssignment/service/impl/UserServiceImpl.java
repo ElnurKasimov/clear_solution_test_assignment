@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateFields(long id) {
+    public User updateSomeFields(User user) {
         return null;
     }
 
@@ -60,14 +60,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> findUsersInBirthdayRange(String from, String to) {
+        return null;
+    }
+
+    @Override
     public List<User> getAll() {
         return null;
     }
 
     @Override
-    public User findByEmail(String email) {
+    public User findById(long id) {
         return null;
     }
+
 
 //    @Override
 //    public User readById(long id) {

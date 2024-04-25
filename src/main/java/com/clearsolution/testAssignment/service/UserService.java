@@ -8,9 +8,10 @@ import java.util.List;
 
 public interface UserService {
     User save(User user);
-    User updateFields(long id);
+    User updateSomeFields(User user);
     User update(User user);
     void delete(long id);
+    List<User> findUsersInBirthdayRange(String from, String to);
     List<User> getAll();
-    User findByEmail(String email);
+    User findById(long id);
 }
