@@ -1,10 +1,14 @@
 package com.clearsolution.testAssignment.controller;
 
+import com.clearsolution.testAssignment.model.User;
 import com.clearsolution.testAssignment.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,27 +21,31 @@ import java.util.stream.Collectors;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping
-    List<UserResponse> getAllUsers() {
-        return userService.getAll().stream()
-                .map(UserResponse::new)
-                .collect(Collectors.toList());
-    }
-    @GetMapping("/{id}")
-    UserResponse getUser(@PathVariable long id) {
-        log.info("CONTROLLER GET /API/USERS/" + id);
-        return new UserResponse(userService.readById(id));
-    }
+//    @GetMapping
+//    List<UserResponse> getAllUsers() {
+//        return userService.getAll().stream()
+//                .map(UserResponse::new)
+//                .collect(Collectors.toList());
+//    }
+//    @GetMapping("/{id}")
+//    UserResponse getUser(@PathVariable long id) {
+//        log.info("CONTROLLER GET /API/USERS/" + id);
+//        return new UserResponse(userService.readById(id));
+//    }
 
     @PostMapping("/")
-    ResponseEntity<Void> createUser(@RequestBody UserRequest userRequest) {
-        log.info("CONTROLLER POST /API/USERS/");
-        User newUser = UserTransformer.toEntity(userRequest);
-        newUser.setPassword(passwordEncoder.encode(userRequest.getPassword()));
-        newUser.setRole(roleService.findByName(userRequest.getRole().toUpperCase()));
-        userService.create(newUser);
-    return ResponseEntity.status(HttpStatus.CREATED)
-            .header("Location", "/api/users/" + newUser.getId())
+    public ResponseEntity<String> createUser(@RequestBody @Valid User user, BindingResult bindingResult) {
+        log.info("CONTROLLER POST /USERS/");
+        if (bindingResult.hasErrors()) {
+            for (ObjectError error : bindingResult.getAllErrors()) {
+                String errorMessage = error.getDefaultMessage();
+            }
+            return ResponseEntity.badRequest().body("Validation failed");
+        }
+        User newUser = userService.save(user);
+        return  ResponseEntity.status(HttpStatus.CREATED)
+            .header("Location", "/" +
+                    "users/" + newUser.getId())
             .build();
     }
 

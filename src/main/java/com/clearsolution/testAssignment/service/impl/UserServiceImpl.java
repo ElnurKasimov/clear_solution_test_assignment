@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     @Override
-    public User create(User user) {
+    public User save(User user) {
         if (user != null) {
             return userRepository.save(user);
         }
