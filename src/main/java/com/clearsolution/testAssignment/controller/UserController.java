@@ -13,7 +13,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -24,46 +26,54 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
-    ResponseEntity<User>  findUser(@PathVariable long id) {
+    ResponseEntity<Map<String, User>>  findUser(@PathVariable long id) {
         User user = userService.findByIdStub(id);
+        Map<String, User> responseData = new HashMap<>();
+        responseData.put("data", user);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .header("Location", "/users/" + user.getId())
-                .body(user);
+                .body(responseData);
     }
 
     @PostMapping("/")
-    public ResponseEntity<User> createUser(@RequestBody @Valid User user, BindingResult bindingResult) throws BindException {
+    public ResponseEntity<Map<String, User>>  createUser(@RequestBody @Valid User user, BindingResult bindingResult) throws BindException {
         log.info("CONTROLLER POST /USERS/");
         if (bindingResult.hasErrors()) {
             throw new BindException(bindingResult);
         }
         User newUser = userService.save(user);
+        Map<String, User> responseData = new HashMap<>();
+        responseData.put("data", newUser);
         return  ResponseEntity.status(HttpStatus.CREATED)
             .header("Location", "/" + "users/" + newUser.getId())
-            .body(newUser);
+            .body(responseData);
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<User>  updateUser(@PathVariable long id, @RequestBody @Valid User user, BindingResult bindingResult) throws BindException {
+    ResponseEntity<Map<String, User>>  updateUser(@PathVariable long id, @RequestBody @Valid User user, BindingResult bindingResult) throws BindException {
         log.info("CONTROLLER PUT /USERS/" + id);
         if (bindingResult.hasErrors()) {
             throw new BindException(bindingResult);
         }
         user.setId(id);
-        userService.save(user);
+        User updatedUser = userService.save(user);
+        Map<String, User> responseData = new HashMap<>();
+        responseData.put("data", updatedUser);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .header("Location", "/users/" + user.getId())
-                .body(user);
+                .body(responseData);
     }
 
     @PatchMapping("/{id}")
-    ResponseEntity<User>  updateUserFields(@PathVariable long id, @RequestBody User user) throws FieldValidationException {
+    ResponseEntity<Map<String, User>>  updateUserFields(@PathVariable long id, @RequestBody User user) throws FieldValidationException {
         log.info("CONTROLLER PATCH /USERS/" + id);
         user.setId(id);
         User updatedUser = userService.updateSomeFields(user);
+        Map<String, User> responseData = new HashMap<>();
+        responseData.put("data", updatedUser);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .header("Location", "/users/" + user.getId())
-                .body(updatedUser);
+                .body(responseData);
     }
 
     @DeleteMapping("/{id}")

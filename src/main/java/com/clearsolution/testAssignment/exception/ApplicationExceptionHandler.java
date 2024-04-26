@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
-public class ApplicationExceptionHandler { // consider extending ResponseEntityExceptionHandler
+public class ApplicationExceptionHandler {
     @ExceptionHandler(BindException.class)
     public ResponseEntity<?> handleBindException(BindException ex) {
         List<Error> errorList = new ArrayList<>();
@@ -31,21 +31,41 @@ public class ApplicationExceptionHandler { // consider extending ResponseEntityE
 
     @ExceptionHandler(NullEntityReferenceException.class)
     public ResponseEntity<?> handleNullEntityReferenceException(NullEntityReferenceException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
+        Map<String, List<Error>> errors = new HashMap<>();
+        List<Error> errorList = new ArrayList<>();
+        Error error = new Error(400, "user", ex.getMessage());
+        errorList.add(error);
+        errors.put("errors", errorList);
+        return ResponseEntity.badRequest().body(errors);
     }
 
     @ExceptionHandler(FieldValidationException.class)
     public ResponseEntity<?> handleBirthDateValidationException(FieldValidationException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
+        Map<String, List<Error>> errors = new HashMap<>();
+        List<Error> errorList = new ArrayList<>();
+        Error error = new Error(400, "birthDate", ex.getMessage());
+        errorList.add(error);
+        errors.put("errors", errorList);
+        return ResponseEntity.badRequest().body(errors);
     }
 
     @ExceptionHandler(AgeRestrictionException.class)
     public ResponseEntity<?> handleAgeRestrictionException(AgeRestrictionException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
+        Map<String, List<Error>> errors = new HashMap<>();
+        List<Error> errorList = new ArrayList<>();
+        Error error = new Error(400, "birthDate", ex.getMessage());
+        errorList.add(error);
+        errors.put("errors", errorList);
+        return ResponseEntity.badRequest().body(errors);
     }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<?> handleEntityNotFoundException(NotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        Map<String, List<Error>> errors = new HashMap<>();
+        List<Error> errorList = new ArrayList<>();
+        Error error = new Error(404, null, ex.getMessage());
+        errorList.add(error);
+        errors.put("errors", errorList);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
     }
 }
