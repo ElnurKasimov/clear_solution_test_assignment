@@ -20,6 +20,13 @@ import java.util.Random;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
     private final Environment environment;
+
+    @Override
+    public User findByIdStub(long id) {
+        return new User(id, "dou@test.com","John", "Dou",
+                "1970-01-01", "Rock County", "(111) 111-1234");
+
+    }
     @Override
     public User save(User user) {
         if (user == null) {
@@ -83,7 +90,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(long id) {
-
     }
 
     @Override
@@ -91,52 +97,9 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-    @Override
-    public User findByIdStub(long id) {
-        return new User(id, "dou@test.com","John", "Dou",
-                "1970-01-01", "Rock County", "(111) 111-1234");
-
-    }
 
 
-//    @Override
-//    public User readById(long id) {
-//        return userRepository.findById(id).orElseThrow(
-//                () -> new EntityNotFoundException("User with id " + id + " not found"));
-//    }
-//
-//    @Override
-//    public User update(User user) {
-//        if (user != null) {
-//            readById(user.getId());
-//            return userRepository.save(user);
-//        }
-//        throw new NullEntityReferenceException("User cannot be 'null'");
-//    }
-//
-//    @Override
-//    public void delete(long id) {
-//        User user = readById(id);
-//        userRepository.delete(user);
-//    }
-//
-//    @Override
-//    public List<User> getAll() {
-//        return userRepository.findAll();
-//    }
-//
-//    @Override
-//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//        User user = userRepository.findByEmail(username);
-//        if (user == null) {
-//            throw new UsernameNotFoundException("User not Found!");
-//        }
-//        return user;
-//    }
-//
-//    @Override
-//    public User findByEmail(String username) throws UsernameNotFoundException {
-//        return userRepository.findByEmail(username);
-//    }
+
+
 
 }

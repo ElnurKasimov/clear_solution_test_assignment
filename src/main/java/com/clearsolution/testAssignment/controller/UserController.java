@@ -66,12 +66,11 @@ public class UserController {
                 .body(updatedUser);
     }
 
-//    @DeleteMapping("/{id}")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    void deleteUser(@PathVariable long id) {
-//        log.info("CONTROLLER DELETE /API/USERS/" + id);
-//        userService.delete(id);
-//    }
-
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deleteUser(@PathVariable long id) {
+        log.info("CONTROLLER DELETE /USERS/" + id);
+        userService.delete(id);
+    }
 
 }
