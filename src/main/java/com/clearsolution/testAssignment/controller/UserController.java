@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,20 +40,21 @@ public class UserController {
 
     @GetMapping("")
     ResponseEntity<Map<String, List<User>>> getUsersInBirthDayRange(
-            @RequestParam("from") String from,
-            @RequestParam("to") String to) {
-        if( from == null || to == null) {
-            throw new NullEntityReferenceException("The dates both 'from' and 'to' shouldn't be null.");
+            @RequestParam(value = "from", required = false) String from,
+            @RequestParam(value = "to", required = false) String to) {
+        if(Objects.equals(from, "") || from == null ||
+            Objects.equals(to, "") || to == null) {
+            throw new NullEntityReferenceException("The dates both 'from' and 'to' shouldn't be empty or null.");
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate fromDate = LocalDate.parse(from, formatter);
-        LocalDate toDate = LocalDate.parse(to, formatter);
         if (!from.matches("[1-9][0-9][0-9]{2}-([0][1-9]|[1][0-2])-([1-2][0-9]|[0][1-9]|[3][0-1])")) {
             throw new DateRestrictionException("Date 'from' must have format: yyyy-mm-dd with correct values.");
         }
         if (!to.matches("[1-9][0-9][0-9]{2}-([0][1-9]|[1][0-2])-([1-2][0-9]|[0][1-9]|[3][0-1])")) {
             throw new DateRestrictionException("Date 'to' must have format: yyyy-mm-dd with correct values.");
         }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate fromDate = LocalDate.parse(from, formatter);
+        LocalDate toDate = LocalDate.parse(to, formatter);
         if(toDate.isBefore(fromDate)) {
             throw new DateRestrictionException("Date 'from' must be before 'to'.");
         }
