@@ -1,6 +1,7 @@
 package com.clearsolution.testAssignment.service.impl;
 
 import com.clearsolution.testAssignment.exception.AgeRestrictionException;
+import com.clearsolution.testAssignment.exception.DateRestrictionException;
 import com.clearsolution.testAssignment.exception.FieldValidationException;
 import com.clearsolution.testAssignment.exception.NullEntityReferenceException;
 import com.clearsolution.testAssignment.model.User;
@@ -8,10 +9,10 @@ import com.clearsolution.testAssignment.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -55,7 +56,6 @@ public class UserServiceImpl implements UserService {
             throw new NullEntityReferenceException("User cannot be 'null'");
         }
         User updatedUser = findByIdStub(user.getId());
-
         String email = user.getEmail();
         if( email != null) {
             if (email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
@@ -89,17 +89,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(long id) {
-    }
+    public void delete(long id) {}
+
 
     @Override
     public List<User> findUsersInBirthdayRange(String from, String to) {
-        return null;
+        User user1 = new User(1, "dou@test.com","John", "Dou",
+                from, "Rock County", "(111) 111-1234");
+        User user2 = new User(2, "mask@test.com","Elon", "Mask",
+                to, "Rockwell County", "(111) 222-1234");
+        List<User> users = new ArrayList<>();
+        users.add(user1);
+        users.add(user2);
+        return users;
     }
-
-
-
-
-
 
 }
