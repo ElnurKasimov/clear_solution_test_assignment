@@ -1,13 +1,15 @@
 package com.clearsolution.testAssignment.service.impl;
 
 import com.clearsolution.testAssignment.exception.AgeRestrictionException;
-import com.clearsolution.testAssignment.exception.BirthDateValidationException;
+import com.clearsolution.testAssignment.exception.FieldValidationException;
 import com.clearsolution.testAssignment.exception.NullEntityReferenceException;
 import com.clearsolution.testAssignment.model.User;
 import com.clearsolution.testAssignment.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindException;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -27,7 +29,7 @@ public class UserServiceImpl implements UserService {
         LocalDate parsedDate = LocalDate.parse(user.getBirthDate(), formatter);
         int minAge = Integer.parseInt(environment.getProperty("minAge"));
         if (!parsedDate.isBefore(LocalDate.now())) {
-            throw new BirthDateValidationException("Birth date must be before current date.");
+            throw new FieldValidationException("Birth date must be before current date.");
         }
         if (parsedDate.isAfter(LocalDate.now().minusYears(minAge).minusDays(1))) {
             throw new AgeRestrictionException("User age must be more than " + minAge + " years.");
@@ -45,16 +47,38 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new NullEntityReferenceException("User cannot be 'null'");
         }
-
         User updatedUser = findByIdStub(user.getId());
 
-        updatedUser.setEmail(user.getEmail());
-        updatedUser.setFirstName(user.getFirstName());
-        updatedUser.setLastName(user.getLastName());
-        updatedUser.setBirthDate(user.getBirthDate());
-        updatedUser.setAddress(user.getAddress());
-        updatedUser.setPhoneNumber(user.getPhoneNumber());
-        return null;
+        String email = user.getEmail();
+        if( email != null) {
+            if (email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+                updatedUser.setEmail(email);
+            } else {
+                throw new FieldValidationException("Email must be in the format of an e-mail address.");
+            }
+        }
+        if( user.getFirstName() != null) {
+            updatedUser.setFirstName(user.getFirstName());
+        }
+        if( user.getLastName() != null) {
+            updatedUser.setLastName(user.getLastName());
+        }
+        String birthDay = user.getBirthDate();
+
+        if( birthDay != null) {
+            if (birthDay.matches("[1-9][0-9][0-9]{2}-([0][1-9]|[1][0-2])-([1-2][0-9]|[0][1-9]|[3][0-1])")) {
+                updatedUser.setBirthDate(birthDay);
+            } else {
+                throw new FieldValidationException("Birth date must have format: yyyy-mm-dd with correct values.");
+            }
+        }
+        if( user.getAddress() != null) {
+            updatedUser.setAddress(user.getAddress());
+        }
+        if( user.getPhoneNumber() != null) {
+            updatedUser.setPhoneNumber(user.getPhoneNumber());
+        }
+        return save(updatedUser);
     }
 
     @Override

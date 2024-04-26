@@ -1,23 +1,14 @@
 package com.clearsolution.testAssignment.exception;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.NoHandlerFoundException;
 
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,8 +32,8 @@ public class ApplicationExceptionHandler { // consider extending ResponseEntityE
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 
-    @ExceptionHandler(BirthDateValidationException.class)
-    public ResponseEntity<?> handleBirthDateValidationException(BirthDateValidationException ex) {
+    @ExceptionHandler(FieldValidationException.class)
+    public ResponseEntity<?> handleBirthDateValidationException(FieldValidationException ex) {
         log.error("ERROR - "+ ex.getMessage());
         return ResponseEntity.badRequest().body(ex.getMessage());
     }

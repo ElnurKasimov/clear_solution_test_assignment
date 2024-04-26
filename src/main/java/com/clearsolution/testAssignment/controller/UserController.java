@@ -1,5 +1,6 @@
 package com.clearsolution.testAssignment.controller;
 
+import com.clearsolution.testAssignment.exception.FieldValidationException;
 import com.clearsolution.testAssignment.model.User;
 import com.clearsolution.testAssignment.service.UserService;
 import jakarta.validation.Valid;
@@ -22,6 +23,14 @@ import java.util.stream.Collectors;
 public class UserController {
     private final UserService userService;
 
+    @GetMapping("/{id}")
+    ResponseEntity<User>  findUser(@PathVariable long id) {
+        User user = userService.findByIdStub(id);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/users/" + user.getId())
+                .body(user);
+    }
+
     @PostMapping("/")
     public ResponseEntity<User> createUser(@RequestBody @Valid User user, BindingResult bindingResult) throws BindException {
         log.info("CONTROLLER POST /USERS/");
@@ -36,7 +45,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     ResponseEntity<User>  updateUser(@PathVariable long id, @RequestBody @Valid User user, BindingResult bindingResult) throws BindException {
-        log.info("CONTROLLER PUT /API/USERS/" + id);
+        log.info("CONTROLLER PUT /USERS/" + id);
         if (bindingResult.hasErrors()) {
             throw new BindException(bindingResult);
         }
@@ -45,6 +54,16 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .header("Location", "/users/" + user.getId())
                 .body(user);
+    }
+
+    @PatchMapping("/{id}")
+    ResponseEntity<User>  updateUserFields(@PathVariable long id, @RequestBody User user) throws FieldValidationException {
+        log.info("CONTROLLER PATCH /USERS/" + id);
+        user.setId(id);
+        User updatedUser = userService.updateSomeFields(user);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/users/" + user.getId())
+                .body(updatedUser);
     }
 
 //    @DeleteMapping("/{id}")
