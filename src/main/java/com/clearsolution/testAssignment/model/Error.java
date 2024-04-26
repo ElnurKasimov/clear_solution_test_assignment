@@ -10,8 +10,8 @@ import lombok.Setter;
 @Setter @Getter
 public class Error {
     private int status;
-    private String field;
+    private String errorObject;
     private String description;
-
+    private String path;
 
 }

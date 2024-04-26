@@ -28,16 +28,6 @@ import java.util.Objects;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("/{id}")
-    ResponseEntity<Map<String, User>> findUser(@PathVariable long id) {
-        User user = userService.findByIdStub(id);
-        Map<String, User> responseData = new HashMap<>();
-        responseData.put("data", user);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .header("Location", "/users/" + user.getId())
-                .body(responseData);
-    }
-
     @GetMapping("")
     ResponseEntity<Map<String, List<User>>> getUsersInBirthDayRange(
             @RequestParam(value = "from", required = false) String from,
