@@ -1,11 +1,15 @@
 package com.clearsolution.testAssignment.controller;
 
+import com.clearsolution.testAssignment.exception.DateRestrictionException;
 import com.clearsolution.testAssignment.model.User;
 import com.clearsolution.testAssignment.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,8 +18,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.List;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.stream.Stream;
+
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -110,10 +114,8 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-
-
     @Test
-    @DisplayName("Test that POST  /users/  works correctly")
+    @DisplayName("Test that POST  /users/  creates user correctly")
     void testThatPostCreateUserWorksCorrectly() throws Exception {
         User user = new User( 0, "dou@test.com","John", "Dou",
                 "1990-01-01", "Rock County", "(111) 111-1234");
@@ -129,17 +131,82 @@ class UserControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$", Matchers.hasKey("data")))
-//                .andExpect(jsonPath("$", Matchers.hasValue(newUser)))
                 .andExpect(jsonPath("$.data.email").value("dou@test.com"))
                 .andExpect(jsonPath("$.data.firstName").value("John"))
                 .andExpect(jsonPath("$.data.lastName").value("Dou"))
                 .andExpect(jsonPath("$.data.birthDate").value("1990-01-01"))
                 .andExpect(jsonPath("$.data.address").value("Rock County"))
-                .andExpect(jsonPath("$.data.PhoneNumber").value("(111) 111-1234"))
-        ;
+                .andExpect(jsonPath("$.data.phoneNumber").value("(111) 111-1234"));
         verify(userService, times(1)).save(user);
     }
 
+    @ParameterizedTest(name = "{index} Test that POST  /users/  throws BindException when user field is not valid")
+    @MethodSource
+    void testThatCreateUserThrowsBindExceptionWhenUserFieldIsNotValid(User user) throws Exception {
+        mockMvc.perform(post("/users/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isBadRequest());
+    }
+
+    private static Stream<Arguments> testThatCreateUserThrowsBindExceptionWhenUserFieldIsNotValid() {
+        return Stream.of(
+                Arguments.of(new User( 0, "doutest.com","John", "Dou",
+                                "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, null,"John", "Dou",
+                        "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "","John", "Dou",
+                        "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","", "Dou",
+                                "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com",null, "Dou",
+                        "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","John", "",
+                                "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","John", null,
+                        "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","John", "Dou",
+                        "", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","John", null,
+                        null, "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","John", "Dou",
+                        "1990/01/01", "Rock County", "(111) 111-1234"))
+        );
+    }
+
+    @Test
+    @DisplayName("Test that POST  /users/  throws DateRestriction when user birthday after current date")
+    void testThatCreateUserThrowsDateRestrictionWhenUserBirthdayAfterCurrentDate() throws Exception {
+        User user = new User( 0, "dou@test","John", "Dou",
+                "2025-01-01", "Rock County", "(111) 111-1234");
+        given(userService.save(any(User.class))).willThrow(new DateRestrictionException("Birth date must be before current date."));
+        mockMvc.perform(post("/users/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    @DisplayName("Test that POST  /users/  throws DateRestriction when user is yunger then 18 years")
+    void testThatCreateUserThrowsAgeRestrictionWhenUserYunger18Years() throws Exception {
+        User user = new User( 0, "dou@test","John", "Dou",
+                "2014-01-01", "Rock County", "(111) 111-1234");
+        given(userService.save(any(User.class))).willThrow(new DateRestrictionException("User age must be more than 18 years."));
+        mockMvc.perform(post("/users/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Test that createUser throws DateRestrictionException when user has incorrect date format")
+    void testCreateUserThrowsDateRestrictionExceptionWhenUserHasIncorrectDateFormat() throws Exception {
+        User user = new User();
+        user.setBirthDate("2022/01/01");
+        mockMvc.perform(post("/users/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user))) // Преобразуем объект в JSON
+                .andExpect(status().isBadRequest());
+    }
 
 
 

@@ -1,5 +1,6 @@
 package com.clearsolution.testAssignment.controller;
 
+import com.clearsolution.testAssignment.exception.AgeRestrictionException;
 import com.clearsolution.testAssignment.exception.DateRestrictionException;
 import com.clearsolution.testAssignment.exception.FieldValidationException;
 import com.clearsolution.testAssignment.exception.NullEntityReferenceException;
@@ -69,7 +70,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<Map<String, User>>  updateUser(@PathVariable long id, @RequestBody @Valid User user, BindingResult bindingResult) throws BindException {
+    ResponseEntity<Map<String, User>>  updateUser(@PathVariable long id, @RequestBody @Valid User user,
+             BindingResult bindingResult) throws BindException, DateRestrictionException, AgeRestrictionException {
         log.info("CONTROLLER PUT /USERS/" + id);
         if (bindingResult.hasErrors()) {
             throw new BindException(bindingResult);

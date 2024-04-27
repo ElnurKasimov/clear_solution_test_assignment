@@ -18,6 +18,7 @@ public class User {
     private long id;
 
     @Email(message = "Email must be in the format of an e-mail address.")
+    @NotEmpty(message = "Email shouldn't be null or empty.")
     private String email;
 
     @NotEmpty(message = "First name shouldn't be null or empty.")
@@ -28,6 +29,7 @@ public class User {
 
     @Pattern(regexp = "[1-9][0-9][0-9]{2}-([0][1-9]|[1][0-2])-([1-2][0-9]|[0][1-9]|[3][0-1])",
             message = "Birth date must have format: yyyy-mm-dd with correct values.")
+    @NotEmpty(message = "Birthday shouldn't be null or empty.")
     private String birthDate;
 
     private String address;
