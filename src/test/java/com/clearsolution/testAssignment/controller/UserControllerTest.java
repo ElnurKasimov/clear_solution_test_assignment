@@ -197,14 +197,60 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    @DisplayName("Test that createUser throws DateRestrictionException when user has incorrect date format")
-    void testCreateUserThrowsDateRestrictionExceptionWhenUserHasIncorrectDateFormat() throws Exception {
-        User user = new User();
-        user.setBirthDate("2022/01/01");
-        mockMvc.perform(post("/users/")
+    @ParameterizedTest(name = "{index} Test that PUT  /users/id  throws BindException when user field is not valid")
+    @MethodSource
+    void testThatUpdateUserThrowsBindExceptionWhenUserFieldIsNotValid(User user) throws Exception {
+        mockMvc.perform(put("/users/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user))) // Преобразуем объект в JSON
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isBadRequest());
+    }
+
+    private static Stream<Arguments> testThatUpdateUserThrowsBindExceptionWhenUserFieldIsNotValid() {
+        return Stream.of(
+                Arguments.of(new User( 0, "doutest.com","John", "Dou",
+                        "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, null,"John", "Dou",
+                        "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "","John", "Dou",
+                        "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","", "Dou",
+                        "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com",null, "Dou",
+                        "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","John", "",
+                        "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","John", null,
+                        "1990-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","John", "Dou",
+                        "", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","John", null,
+                        null, "Rock County", "(111) 111-1234")),
+                Arguments.of(new User( 0, "dou@test.com","John", "Dou",
+                        "1990/01/01", "Rock County", "(111) 111-1234"))
+        );
+    }
+
+    @Test
+    @DisplayName("Test that PUT  /users/{id}  throws DateRestriction when updated user birthday after current date")
+    void testThatUpdateUserThrowsDateRestrictionWhenUserBirthdayAfterCurrentDate() throws Exception {
+        User user = new User( 0, "dou@test","John", "Dou",
+                "2025-01-01", "Rock County", "(111) 111-1234");
+        given(userService.save(any(User.class))).willThrow(new DateRestrictionException("Birth date must be before current date."));
+        mockMvc.perform(put("/users/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    @DisplayName("Test that PUT  /users/{id}  throws DateRestriction when updated user is younger then 18 years")
+    void testThatUpdateUserThrowsAgeRestrictionWhenUserYounger18Years() throws Exception {
+        User user = new User( 0, "dou@test","John", "Dou",
+                "2014-01-01", "Rock County", "(111) 111-1234");
+        given(userService.save(any(User.class))).willThrow(new DateRestrictionException("User age must be more than 18 years."));
+        mockMvc.perform(put("/users/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isBadRequest());
     }
 
