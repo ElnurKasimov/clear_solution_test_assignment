@@ -1,5 +1,6 @@
 package com.clearsolution.testAssignment.controller;
 
+import com.clearsolution.testAssignment.exception.AgeRestrictionException;
 import com.clearsolution.testAssignment.exception.DateRestrictionException;
 import com.clearsolution.testAssignment.exception.FieldValidationException;
 import com.clearsolution.testAssignment.exception.NullEntityReferenceException;
@@ -21,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -186,11 +186,11 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
     @Test
-    @DisplayName("Test that POST  /users/  throws DateRestriction when user is younger then 18 years")
+    @DisplayName("Test that POST  /users/  throws AgeRestriction when user is younger then 18 years")
     void testThatCreateUserThrowsAgeRestrictionWhenUserYounger18Years() throws Exception {
         User user = new User( 0, "dou@test","John", "Dou",
                 "2014-01-01", "Rock County", "(111) 111-1234");
-        given(userService.save(any(User.class))).willThrow(new DateRestrictionException("User age must be more than 18 years."));
+        given(userService.save(any(User.class))).willThrow(new AgeRestrictionException("User age must be more than 18 years."));
         mockMvc.perform(post("/users/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
@@ -267,11 +267,11 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
     @Test
-    @DisplayName("Test that PUT  /users/{id}  throws DateRestriction when updated user is younger then 18 years")
+    @DisplayName("Test that PUT  /users/{id}  throws AgeRestriction when updated user is younger then 18 years")
     void testThatUpdateUserThrowsAgeRestrictionWhenUserYounger18Years() throws Exception {
         User user = new User( 0, "dou@test","John", "Dou",
                 "2014-01-01", "Rock County", "(111) 111-1234");
-        given(userService.save(any(User.class))).willThrow(new DateRestrictionException("User age must be more than 18 years."));
+        given(userService.save(any(User.class))).willThrow(new AgeRestrictionException("User age must be more than 18 years."));
         mockMvc.perform(put("/users/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
@@ -305,26 +305,22 @@ class UserControllerTest {
         verify(userService, times(1)).updateSomeFields(1, userWithFieldsToUpdate);
     }
 
-//    @Test
-//    @DisplayName("Test that PATCH  /users/{id}  throws NullEntityReferenceException when user with fields to update is null")
-//    void testUpdateUserFieldsWithNullUser() throws Exception {
-////        User userWithFieldsToUpdate = null;
-////        User updatedUser = new User( 1L, "mask@test.com","John", "Dou",
-////                "1990-01-01", "Rock County", "(111) 111-1234");
-//        when(userService.updateSomeFields(anyLong(), isNull())).thenThrow(NullEntityReferenceException.class);
-//
-//        mockMvc.perform(patch("/users/{id}", 1L)
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isInternalServerError());
-//    }
+    @Test
+    @DisplayName("Test that PATCH  /users/{id}  throws NullEntityReferenceException when user with fields to update is null")
+    void testThatUpdateUserFieldsTrowsNullEntityReferenceExceptionWithNullUser() throws Exception {
+        given(userService.updateSomeFields(anyLong(), isNull())).willThrow(new NullEntityReferenceException("User cannot be 'null'"));
+        mockMvc.perform(patch("/users/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
 
     @Test
     @DisplayName("Test that PATCH  /users/{id}  throws FieldValidationException when updated email is not in email format")
-    void testUpdateUserFieldsWithInvalidEmail() throws Exception {
+    void testThatUpdateUserFieldsTrowsFieldValidationExceptionWithInvalidEmail() throws Exception {
         User userWithFieldsToUpdate = new User( 0, "masktest.com",null, null,
                 null, null, null);
-        when(userService.updateSomeFields(anyLong(), any(User.class)))
-                .thenThrow(FieldValidationException.class);
+        given(userService.updateSomeFields(anyLong(), any(User.class)))
+                .willThrow(FieldValidationException.class);
         mockMvc.perform(patch("/users/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userWithFieldsToUpdate)))
@@ -332,45 +328,45 @@ class UserControllerTest {
     }
     @Test
     @DisplayName("Test that PATCH  /users/{id}  throws FieldValidationException when updated birthdate is not in correct format")
-    void testUpdateUserFieldsWithInvalidBirthDate() throws Exception {
+    void testThatUpdateUserFieldsTrowsFieldValidationExceptionWithInvalidBirthDate () throws Exception {
         User userWithFieldsToUpdate = new User( 0, "mask@test.com",null, null,
                 "1970/01/01", null, null);
-        when(userService.updateSomeFields(1, userWithFieldsToUpdate))
-                .thenThrow(FieldValidationException.class);
+        given(userService.updateSomeFields(1, userWithFieldsToUpdate))
+                .willThrow(FieldValidationException.class);
         mockMvc.perform(patch("/users/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userWithFieldsToUpdate)))
                 .andExpect(status().isBadRequest());
     }
 
-//    @Test
-//    void testUpdateUserFieldsWithInvalidBirthDate() throws Exception {
-//        when(userServiceMock.updateSomeFields(anyLong(), any(User.class))).thenThrow(FieldValidationException.class);
-//
-//        mockMvc.perform(patch("/users/1")
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    @Test
-//    void testUpdateUserFieldsWithFutureBirthDate() throws Exception {
-//        when(userServiceMock.updateSomeFields(anyLong(), any(User.class))).thenThrow(FieldValidationException.class);
-//
-//        mockMvc.perform(patch("/users/1")
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//    @Test
-//    void testUpdateUserFieldsWithUnderageUser() throws Exception {
-//        when(userServiceMock.updateSomeFields(anyLong(), any(User.class))).thenThrow(AgeRestrictionException.class);
-//
-//        mockMvc.perform(patch("/users/1")
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest());
-//    }
-//
-//
+
+    @Test
+    @DisplayName("Test that PATCH  /users/{id}  throws DateRestrictionException when updated birthdate is after current Date")
+    void testThatUpdateUserFieldsThrowsDateRestrictionExceptionWithFutureBirthDate() throws Exception {
+        User userWithFieldsToUpdate = new User( 0, "mask@test.com",null, null,
+                "2025-01-01", null, null);
+        given(userService.updateSomeFields(1, userWithFieldsToUpdate))
+                .willThrow(new DateRestrictionException("Birth date must be before current date."));
+        mockMvc.perform(patch("/users/{id}", 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userWithFieldsToUpdate)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Test that PATCH  /users/{id}  throws AgeRestrictionException when updated user younger then 18 years")
+    void testThatUpdateUserFieldsThrowsAgeRestrictionExceptionWithFutureBirthDate() throws Exception {
+        User userWithFieldsToUpdate = new User( 0, "mask@test.com",null, null,
+                "2014-01-01", null, null);
+        given(userService.updateSomeFields(1, userWithFieldsToUpdate))
+                .willThrow(new AgeRestrictionException("User age must be more than 18 years."));
+        mockMvc.perform(patch("/users/{id}", 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userWithFieldsToUpdate)))
+                .andExpect(status().isBadRequest());
+    }
+
+
 ////    @Test
 ////    void deleteUser() {
 ////    }
