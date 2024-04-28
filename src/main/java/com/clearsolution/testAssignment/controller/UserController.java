@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/users")
@@ -57,7 +56,6 @@ public class UserController {
 
     @PostMapping("/")
     public ResponseEntity<Map<String, User>>  createUser(@RequestBody @Valid User user, BindingResult bindingResult) throws BindException, FieldValidationException, DateRestrictionException {
-        log.info("CONTROLLER POST /USERS/");
         if (bindingResult.hasErrors()) {
             throw new BindException(bindingResult);
         }
@@ -72,7 +70,6 @@ public class UserController {
     @PutMapping("/{id}")
     ResponseEntity<Map<String, User>>  updateUser(@PathVariable long id, @RequestBody @Valid User user,
              BindingResult bindingResult) throws BindException, DateRestrictionException, AgeRestrictionException {
-        log.info("CONTROLLER PUT /USERS/" + id);
         if (bindingResult.hasErrors()) {
             throw new BindException(bindingResult);
         }
@@ -87,9 +84,7 @@ public class UserController {
 
     @PatchMapping("/{id}")
     ResponseEntity<Map<String, User>>  updateUserFields(@PathVariable long id, @RequestBody User user) throws FieldValidationException {
-        log.info("CONTROLLER PATCH /USERS/" + id);
-        user.setId(id);
-        User updatedUser = userService.updateSomeFields(user);
+        User updatedUser = userService.updateSomeFields(id, user);
         Map<String, User> responseData = new HashMap<>();
         responseData.put("data", updatedUser);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -100,7 +95,6 @@ public class UserController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteUser(@PathVariable long id) {
-        log.info("CONTROLLER DELETE /USERS/" + id);
         userService.delete(id);
     }
 
