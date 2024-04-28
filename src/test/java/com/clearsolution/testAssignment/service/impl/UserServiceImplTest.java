@@ -12,13 +12,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-
 import java.util.stream.Stream;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -68,8 +63,6 @@ class UserServiceImplTest {
         assertThrows(AgeRestrictionException.class, () -> userService.save(userToCreate));
     }
 
-    //--------      Tests for updateSomeFields   --------------------------------------------------------------
-
     @ParameterizedTest(name = "{index}. test that updateSomeFields method updates user with different input cases")
     @MethodSource
     void testThatUpdateSomeFieldsUpdatesCorrectlyForDifferentInputCases(User inputUser, User updatedUser) {
@@ -79,7 +72,6 @@ class UserServiceImplTest {
 //        when(userServiceMock.findById(1L)).thenReturn(userBefore);
 //        assertEquals(updatedUser, userService.updateSomeFields(1,inputUser));
     }
-
     private static Stream<Arguments> testThatUpdateSomeFieldsUpdatesCorrectlyForDifferentInputCases() {
         return Stream.of(
                 Arguments.of(new User (0,"mask@test.com", null, null, null, null, null),
@@ -99,6 +91,7 @@ class UserServiceImplTest {
                                 "2000-01-01", "New York", "(111) 222-1234"))
         );
     }
+
     @Test
     @DisplayName("test that updateSomeFields method throws NullEntityReferenceException if user in input parameter" +
             " is null")

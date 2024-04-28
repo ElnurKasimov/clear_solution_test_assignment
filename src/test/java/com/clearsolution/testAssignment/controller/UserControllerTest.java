@@ -67,16 +67,18 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data[1].lastName").value("Mask"))
                 .andExpect(jsonPath("$.data[1].birthDate").value(to));
         verify(userService, times(1)).findUsersInBirthdayRange(from, to);
-
     }
+
     @Test
     @DisplayName("Test that GET  /users&from=...&to=... throws NullEntityReferenceException when 'from' or 'to' is null")
     void testThatGetUsersInBirthDayRangeThrowsNullEntityReferenceExceptionForNull() throws Exception {
         mockMvc.perform(get("/users")
-                        .param("to", "")
+                        .param("to", "2024-01-01")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+        verify(userService, times(0)).findUsersInBirthdayRange(null, "2024-01-01");
     }
+
     @Test
     @DisplayName("Test that GET  /users&from=...&to=... throws NullEntityReferenceException when 'from' or 'to' is empty")
     void testThatGetUsersInBirthDayRangeThrowsNullEntityReferenceExceptionForEmpty() throws Exception {
@@ -85,7 +87,9 @@ class UserControllerTest {
                         .param("to", "")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+        verify(userService, times(0)).findUsersInBirthdayRange("2020-01-01", "");
     }
+
     @Test
     @DisplayName("Test that GET  /users&from=...&to=... throws DateRestrictionException when 'from' has incorrect format")
     void testThatGetUsersInBirthDayRangeThrowsDateRestrictionExceptionForIncorrectFromFormat() throws Exception {
@@ -94,6 +98,7 @@ class UserControllerTest {
                         .param("to", "2024-01-01")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+        verify(userService, times(0)).findUsersInBirthdayRange("2020/01/01", "2024-01-01");
     }
 
     @Test
@@ -104,6 +109,7 @@ class UserControllerTest {
                         .param("to", "2024/01/01")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+        verify(userService, times(0)).findUsersInBirthdayRange("2020-01-01", "2024/01/01");
     }
 
     @Test
@@ -114,6 +120,7 @@ class UserControllerTest {
                         .param("to", "2020-01-01")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+        verify(userService, times(0)).findUsersInBirthdayRange("2024-01-01", "2020-01-01");
     }
 
     @Test
@@ -185,6 +192,7 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     @DisplayName("Test that POST  /users/  throws AgeRestriction when user is younger then 18 years")
     void testThatCreateUserThrowsAgeRestrictionWhenUserYounger18Years() throws Exception {
@@ -196,7 +204,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isBadRequest());
     }
-
 
     @Test
     @DisplayName("Test that PUT /users/{id}  updates user correctly")
@@ -221,6 +228,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.phoneNumber").value("(111) 111-1234"));
         verify(userService, times(1)).save(toUpdate);
     }
+
     @ParameterizedTest(name = "{index} Test that PUT  /users/id  throws BindException when user field is not valid")
     @MethodSource
     void testThatUpdateUserThrowsBindExceptionWhenUserFieldIsNotValid(User user) throws Exception {
@@ -266,6 +274,7 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     @DisplayName("Test that PUT  /users/{id}  throws AgeRestriction when updated user is younger then 18 years")
     void testThatUpdateUserThrowsAgeRestrictionWhenUserYounger18Years() throws Exception {
@@ -277,9 +286,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isBadRequest());
     }
-
-
-
 
     @Test
     @DisplayName("Test that PATCH /users/{id}  updates user correctly")
@@ -326,6 +332,7 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(userWithFieldsToUpdate)))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     @DisplayName("Test that PATCH  /users/{id}  throws FieldValidationException when updated birthdate is not in correct format")
     void testThatUpdateUserFieldsTrowsFieldValidationExceptionWithInvalidBirthDate () throws Exception {
@@ -338,7 +345,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(userWithFieldsToUpdate)))
                 .andExpect(status().isBadRequest());
     }
-
 
     @Test
     @DisplayName("Test that PATCH  /users/{id}  throws DateRestrictionException when updated birthdate is after current Date")
@@ -366,8 +372,13 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    @DisplayName("Test that DELETE  /users/{id} works correctly")
+    void testThatDeleteWorksCorrectly() throws Exception {
+        mockMvc.perform(delete("/users/{id}", 2)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+        verify(userService, times(1)).delete(2);
+    }
 
-////    @Test
-////    void deleteUser() {
-////    }
 }
