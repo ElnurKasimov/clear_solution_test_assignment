@@ -8,13 +8,22 @@ import com.clearsolution.testAssignment.model.User;
 import com.clearsolution.testAssignment.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class UserServiceImplTest {
@@ -25,6 +34,7 @@ class UserServiceImplTest {
     void findById() {
     }
 
+    //--------      Tests for save   --------------------------------------------------------------
     @Test
     @DisplayName("test that save method creates user when input user hasn't id, i.e. id = 0")
     void testThatSaveCreatesUser() {
@@ -67,31 +77,37 @@ class UserServiceImplTest {
         assertThrows(AgeRestrictionException.class, () -> userService.save(userToCreate));
     }
 
-    //-----------------------------------------------------------------------
+    //--------      Tests for updateSomeFields   --------------------------------------------------------------
 
+    @ParameterizedTest(name = "{index}. test that updateSomeFields method updates user with different input cases")
+    @MethodSource
+    void testThatUpdateSomeFieldsUpdatesCorrectlyForDifferentInputCases(User inputUser, User updatedUser) {
+        UserService userServiceMock = mock(UserService.class);
+        User userBefore = new User( 1, "dou_test.com","John", "Dou",
+                "2014-01-01", "Rock County", "(111) 111-1234");
+        when(userService.findById(1L)).thenReturn(userBefore);
+        assertEquals(updatedUser, userService.updateSomeFields(1,inputUser));
+    }
 
-//        @Test
-//        void testUpdateSomeFieldsSuccess() {
-//            // Создаем экземпляр UserService
-//            UserService userService = new UserServiceImpl();
-//
-//            // Создаем пользователя, которого будем обновлять
-//            User existingUser = new User();
-//            existingUser.setId(1L); // Предполагаем, что пользователь существует
-//            existingUser.setFirstName("John");
-//
-//            // Создаем пользователя с обновленными данными
-//            User updatedUser = new User();
-//            updatedUser.setLastName("Doe");
-//
-//            // Подготавливаем findById, чтобы он вернул существующего пользователя
-//            when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
-//
-//            // Вызываем метод обновления и проверяем успешное обновление
-//            User resultUser = userService.updateSomeFields(1L, updatedUser);
-//            assertEquals("Doe", resultUser.getLastName());
-//        }
-
+    private static Stream<Arguments> testThatUpdateSomeFieldsUpdatesCorrectlyForDifferentInputCases() {
+        return Stream.of(
+                Arguments.of(new User (0,"mask@test.com", null, null, null, null, null),
+                        new User( 1, "mask@test.com","John", "Dou",
+                                "2004-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User (0,null, null, "Mask", null, null, null),
+                        new User( 1, "dou@test.com","John", "Mask",
+                                "2004-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User (0,null, null, null, null, null, "(111) 222-1234"),
+                        new User( 1, "dou@test.com","John", "Dou",
+                                "2004-01-01", "Rock County", "(111) 222-1234")),
+                Arguments.of(new User (0,"mask@test.com", null, "Mask", "2000-01-01", null, null),
+                        new User( 1, "mask@test.com","John", "Mask",
+                                "2000-01-01", "Rock County", "(111) 111-1234")),
+                Arguments.of(new User (0,"mask@test.com", "Elon", "Mask", "2000-01-01", "New York", "(111) 222-1234"),
+                        new User( 1, "mask@test.com","Elon", "Mask",
+                                "2000-01-01", "New York", "(111) 222-1234"))
+        );
+    }
     @Test
     @DisplayName("test that updateSomeFields method throws NullEntityReferenceException if user in input parameter" +
             " is null")
@@ -131,7 +147,7 @@ class UserServiceImplTest {
             " has age less than 18 years")
     void testThatUpdateSomeFieldsWithUnderAgeUserThrowsAgeRestrictionException() {
         User userToUpdate = new User( 1, "dou@test.com","John", "Dou",
-                "2025-01-01", "Rock County", "(111) 111-1234");
+                "2014-01-01", "Rock County", "(111) 111-1234");
         assertThrows(AgeRestrictionException.class, () -> userService.updateSomeFields(1L, userToUpdate));
     }
 
